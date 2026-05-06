@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Working Protocols — Stomata Labs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#F6F5F2;
+  --surface:#FFFFFF;
+  --surface2:#FAFAF8;
+  --border:#E4E1DA;
+  --border2:#CBC7BE;
+  --text:#18170F;
+  --muted:#7A7569;
+  --faint:#B8B4AB;
+  --accent:#1C6B45;
+  --accent-light:#E8F4EE;
+  --terra-bg:#D6F0DC; --terra-tx:#17422B;
+  --basic-bg:#EDEDFD; --basic-tx:#312D8A;
+  --prime-bg:#FAF0E0; --prime-tx:#6B3A00;
+  --nexus-bg:#FAECEC; --nexus-tx:#612020;
+  --cross-bg:#EFEDE8; --cross-tx:#4F4D48;
+  --r:8px;
+  --shadow-sm:0 1px 2px rgba(0,0,0,.06);
+  --shadow:0 2px 8px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.04);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:14px}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.55;-webkit-font-smoothing:antialiased}
+
+/* ── HEADER ─────────────────────────────────────────────── */
+.header{
+  background:var(--text);
+  color:#fff;
+  padding:22px 40px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+}
+.header-brand{display:flex;align-items:center;gap:13px}
+.logo{
+  width:34px;height:34px;border-radius:7px;
+  background:var(--accent);
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+.logo svg{width:16px;height:16px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.header-title{font-size:16px;font-weight:600;letter-spacing:-.2px;color:#fff;line-height:1.2}
+.header-sub{font-size:11px;color:#7A7870;margin-top:2px;font-weight:400}
+.header-right{display:flex;align-items:center;gap:8px}
+.btn-export{
+  padding:6px 14px;border-radius:6px;font-family:'Inter',sans-serif;
+  font-size:11px;font-weight:500;cursor:pointer;transition:all .15s;
+  border:1px solid #3A3A38;background:transparent;color:#9A9890;letter-spacing:.01em;
+}
+.btn-export:hover{border-color:#888;color:#ddd}
+
+/* ── TABS ───────────────────────────────────────────────── */
+.tab-bar{
+  background:var(--text);
+  display:flex;padding:0 40px;
+  border-top:1px solid #252522;
+}
+.tab{
+  padding:10px 16px;font-size:12px;font-weight:500;
+  color:#6A6A68;cursor:pointer;
+  border-bottom:2px solid transparent;
+  transition:all .15s;user-select:none;letter-spacing:.01em;
+}
+.tab:hover{color:#aaa}
+.tab.active{color:#fff;border-bottom-color:var(--accent)}
+
+/* ── CONTROLS (protocols tab) ───────────────────────────── */
+.controls{
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+  padding:12px 40px;
+  display:flex;gap:8px;flex-wrap:wrap;align-items:center;
+  position:sticky;top:0;z-index:100;
+  box-shadow:0 1px 0 var(--border),0 2px 6px rgba(0,0,0,.04);
+}
+.search-wrap{position:relative;flex:1;min-width:180px;max-width:280px}
+.search-wrap svg{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--faint);pointer-events:none;width:13px;height:13px}
+.search-wrap input{
+  width:100%;padding:6px 10px 6px 30px;
+  border:1px solid var(--border);border-radius:6px;
+  font-family:'Inter',sans-serif;font-size:12px;
+  background:var(--bg);color:var(--text);outline:none;
+  transition:border-color .15s;
+}
+.search-wrap input:focus{border-color:var(--accent)}
+.search-wrap input::placeholder{color:var(--faint)}
+.divider-v{width:1px;background:var(--border);height:24px;flex-shrink:0}
+.filter-group{display:flex;gap:4px;flex-wrap:wrap;align-items:center}
+.fl{font-size:10px;color:var(--faint);font-weight:600;text-transform:uppercase;letter-spacing:.09em;white-space:nowrap}
+.chip{
+  padding:4px 9px;border-radius:5px;font-size:11px;font-weight:500;
+  cursor:pointer;border:1px solid transparent;
+  transition:all .12s;white-space:nowrap;
+  background:var(--bg);color:var(--muted);border-color:var(--border);
+  user-select:none;
+}
+.chip:hover{border-color:var(--border2);color:var(--text)}
+.chip.active{background:var(--text);color:#fff;border-color:var(--text)}
+.chip.terra.active{background:var(--terra-bg);color:var(--terra-tx);border-color:var(--terra-tx)}
+.chip.basic.active{background:var(--basic-bg);color:var(--basic-tx);border-color:var(--basic-tx)}
+.chip.prime.active{background:var(--prime-bg);color:var(--prime-tx);border-color:var(--prime-tx)}
+.chip.nexus.active{background:var(--nexus-bg);color:var(--nexus-tx);border-color:var(--nexus-tx)}
+.chip.cross.active{background:var(--cross-bg);color:var(--cross-tx);border-color:var(--cross-tx)}
+.count-pill{
+  font-family:'JetBrains Mono',monospace;font-size:11px;
+  color:var(--muted);white-space:nowrap;margin-left:auto;
+  background:var(--bg);border:1px solid var(--border);
+  padding:3px 9px;border-radius:5px;
+}
+.count-pill strong{color:var(--text)}
+.btn-sm{
+  padding:4px 11px;border-radius:5px;font-family:'Inter',sans-serif;
+  font-size:11px;cursor:pointer;transition:all .12s;font-weight:500;
+}
+.btn-reset{border:1px solid var(--border2);background:transparent;color:var(--muted)}
+.btn-reset:hover{background:var(--bg);color:var(--text)}
+
+/* ── ROLE BAR ───────────────────────────────────────────── */
+.role-bar{
+  background:var(--surface2);
+  border-bottom:1px solid var(--border);
+  padding:9px 40px;
+  display:flex;gap:4px;flex-wrap:wrap;align-items:center;
+}
+.role-chip{
+  padding:3px 10px;border-radius:5px;font-size:11px;font-weight:500;
+  cursor:pointer;border:1px solid transparent;
+  transition:all .12s;user-select:none;
+}
+.role-chip:hover{filter:brightness(.95)}
+.role-chip.inactive{background:var(--bg)!important;color:var(--faint)!important;border-color:var(--border)!important}
+
+/* ── PROTOCOL CARDS ─────────────────────────────────────── */
+.content{padding:16px 40px 60px}
+.sec-header{
+  font-size:10px;font-weight:600;text-transform:uppercase;
+  letter-spacing:.1em;color:var(--faint);
+  padding:18px 0 8px;
+  border-bottom:1px solid var(--border);margin-bottom:3px;
+  display:flex;align-items:center;gap:7px;
+}
+.sec-dot{width:5px;height:5px;border-radius:50%;display:inline-block;flex-shrink:0}
+.card{
+  background:var(--surface);
+  border:1px solid var(--border);border-radius:var(--r);
+  padding:12px 14px;margin:4px 0;
+  display:grid;grid-template-columns:138px 138px 1fr auto;
+  gap:12px;align-items:start;
+  transition:box-shadow .12s,border-color .12s;
+}
+.card:hover{box-shadow:var(--shadow);border-color:var(--border2)}
+.card.critical{border-left:2px solid #B53030}
+.rpill{
+  display:inline-block;font-size:10px;font-weight:500;
+  padding:2px 8px;border-radius:4px;line-height:1.4;
+  word-break:break-word;
+}
+.card-title{font-size:12px;font-weight:600;color:var(--text);margin-bottom:3px;line-height:1.4}
+.card-detail{font-size:11px;color:var(--muted);line-height:1.55}
+.card-detail.collapsed{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.read-more{font-size:10px;color:var(--accent);cursor:pointer;margin-top:2px;display:inline-block;font-weight:500;border:none;background:none;padding:0;font-family:inherit}
+.card-meta{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;min-width:92px}
+.badge{display:inline-block;font-size:9px;font-weight:600;padding:2px 6px;border-radius:4px;white-space:nowrap;text-align:right;letter-spacing:.01em}
+.cadence{font-size:9px;color:var(--faint);font-family:'JetBrains Mono',monospace;text-align:right}
+.crit-flag{font-size:9px;font-weight:600;color:#B53030;text-transform:uppercase;letter-spacing:.05em}
+.empty{text-align:center;padding:64px 20px;color:var(--muted)}
+
+/* ── ORG CHART ──────────────────────────────────────────── */
+.org-wrap{padding:24px 40px 60px}
+.org-hint{
+  font-size:11px;color:var(--muted);
+  margin-bottom:16px;display:flex;align-items:center;gap:6px;
+  padding:9px 14px;background:var(--surface);
+  border:1px solid var(--border);border-radius:var(--r);
+  width:fit-content;
+}
+.org-hint svg{width:13px;height:13px;stroke:var(--accent);flex-shrink:0}
+.org-svg-wrap{
+  background:var(--surface);
+  border:1px solid var(--border);border-radius:var(--r);
+  padding:28px 24px;overflow-x:auto;
+  box-shadow:var(--shadow-sm);
+}
+.org-svg-wrap svg{display:block;margin:0 auto}
+.role-node{cursor:pointer;transition:opacity .15s}
+.role-node.dimmed{opacity:.18}
+.org-legend{
+  display:flex;gap:14px;flex-wrap:wrap;
+  margin-top:12px;padding:11px 16px;
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
+}
+.leg-item{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted)}
+.leg-dot{width:9px;height:9px;border-radius:3px;flex-shrink:0}
+
+/* ── PANELS ─────────────────────────────────────────────── */
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+
+@media print{
+  .controls,.role-bar,.tab-bar,.btn-export,.read-more,.org-hint{display:none!important}
+  .card{page-break-inside:avoid;box-shadow:none}
+  .card-detail.collapsed{display:block;-webkit-line-clamp:unset;overflow:visible}
+  body{background:white}
+  .header{background:#18170F;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .tab-panel{display:block!important}
+  #panel-org{display:none!important}
+}
+@media(max-width:740px){
+  .card{grid-template-columns:1fr 1fr}
+  .card-main,.card-meta{grid-column:1/-1}
+  .card-meta{flex-direction:row;flex-wrap:wrap;align-items:center;justify-content:flex-start}
+  .controls,.role-bar,.content,.org-wrap,.header,.tab-bar{padding-left:16px;padding-right:16px}
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-brand">
+    <div class="logo">
+      <svg viewBox="0 0 16 16">
+        <circle cx="8" cy="8" r="6"/>
+        <path d="M8 5v3l2 2"/>
+      </svg>
+    </div>
+    <div>
+      <div class="header-title">Working Protocols — Stomata Labs</div>
+      <div class="header-sub">Pantaleon &times; Findability Sciences &nbsp;&middot;&nbsp; Who does what, with whom, and when</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <button class="btn-export" onclick="window.print()">Export PDF</button>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tab-bar">
+  <div class="tab active" onclick="switchTab('org',this)">Organisation Chart</div>
+  <div class="tab" onclick="switchTab('protocols',this)">Working Protocols</div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════ -->
+<!-- TAB 1: ORG CHART                                         -->
+<!-- ════════════════════════════════════════════════════════ -->
+<div class="tab-panel active" id="panel-org">
+<div class="org-wrap">
+  <div class="org-hint">
+    <svg viewBox="0 0 16 16" fill="none" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 2"/></svg>
+    Click any role to view their working protocols
+  </div>
+
+  <div class="org-svg-wrap">
+  <!--
+    ViewBox: 920 × 740
+    Governance row  y=16–72   (centred)
+    GM row          y=90–140  (centred)
+    Fork bar        y=158
+    Three lanes (same top y=166, bottom y=638):
+      BUILD   x=12–386   w=374
+      SELL    x=400–606  w=206
+      KEEP    x=620–908  w=288
+    Shared svc      y=652–718 (full width)
+  -->
+  <svg id="orgsvg" viewBox="0 0 920 740" width="100%" style="max-width:920px" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+        <path d="M1 1L9 5L1 9" fill="none" stroke="#CBC7BE" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </marker>
+    </defs>
+
+    <!-- ── GOVERNANCE ── -->
+    <g class="role-node" id="rn-sc" data-role="Steering Committee" onclick="orgClick(this)">
+      <rect x="260" y="16" width="400" height="44" rx="7" fill="#EFEDE8" stroke="#CBC7BE" stroke-width="1"/>
+      <text x="460" y="35" font-family="Inter,sans-serif" font-size="12" font-weight="600" fill="#2A2922" text-anchor="middle" dominant-baseline="central">Steering Committee</text>
+      <text x="460" y="51" font-family="Inter,sans-serif" font-size="9.5" fill="#7A7569" text-anchor="middle" dominant-baseline="central">CEO Pantaleon · CEO Findability Sciences · monthly cadence</text>
+    </g>
+
+    <line x1="460" y1="60" x2="460" y2="82" stroke="#CBC7BE" stroke-width="1"/>
+
+    <g class="role-node" id="rn-gm" data-role="General Manager" onclick="orgClick(this)">
+      <rect x="270" y="82" width="380" height="44" rx="7" fill="#E4E3DE" stroke="#AAA89E" stroke-width="1.2"/>
+      <text x="460" y="101" font-family="Inter,sans-serif" font-size="12" font-weight="600" fill="#18170F" text-anchor="middle" dominant-baseline="central">General Manager</text>
+      <text x="460" y="117" font-family="Inter,sans-serif" font-size="9.5" fill="#5F5D57" text-anchor="middle" dominant-baseline="central">Day-to-day executive authority · P&amp;L · partner governance</text>
+    </g>
+
+    <!-- GM → fork bar -->
+    <line x1="460" y1="126" x2="460" y2="150" stroke="#CBC7BE" stroke-width="1"/>
+    <line x1="195" y1="150" x2="725" y2="150" stroke="#CBC7BE" stroke-width="1"/>
+    <line x1="195" y1="150" x2="195" y2="168" stroke="#CBC7BE" stroke-width="1"/>
+    <line x1="503" y1="150" x2="503" y2="168" stroke="#CBC7BE" stroke-width="1"/>
+    <line x1="725" y1="150" x2="725" y2="168" stroke="#CBC7BE" stroke-width="1"/>
+
+    <!-- ═══════════════════════════════════════════════ -->
+    <!-- SWIM LANE: BUILD  x=12–386                     -->
+    <!-- ═══════════════════════════════════════════════ -->
+    <rect x="12" y="162" width="374" height="468" rx="10" fill="#F3F2FC" stroke="#C8C4F0" stroke-width="0.8"/>
+    <text x="28" y="179" font-family="Inter,sans-serif" font-size="8.5" font-weight="700" fill="#9B97E4" letter-spacing="1.4">BUILD</text>
+
+    <!-- Head of Product & AI -->
+    <g class="role-node" id="rn-hpa" data-role="Head of Product &amp; AI" onclick="orgClick(this)">
+      <rect x="60" y="186" width="254" height="40" rx="7" fill="#EDEDFD" stroke="#AEAAE8" stroke-width="1.2"/>
+      <text x="187" y="203" font-family="Inter,sans-serif" font-size="11.5" font-weight="600" fill="#2E2A82" text-anchor="middle" dominant-baseline="central">Head of Product &amp; AI</text>
+      <text x="187" y="218" font-family="Inter,sans-serif" font-size="9" fill="#6864B8" text-anchor="middle" dominant-baseline="central">Product roadmap · AI/ML methodology · UX quality</text>
+    </g>
+
+    <!-- HPA → 5 role boxes via clean grid -->
+    <!-- vertical drop then horizontal spread to 5 positions -->
+    <line x1="187" y1="226" x2="187" y2="244" stroke="#CBC7BE" stroke-width="0.8"/>
+    <line x1="36"  y1="244" x2="338" y2="244" stroke="#CBC7BE" stroke-width="0.8"/>
+    <!-- 5 drop lines at x=36,103,170,237,338 (but we have 5 roles, pick evenly) -->
+    <line x1="38"  y1="244" x2="38"  y2="258" stroke="#CBC7BE" stroke-width="0.8"/>
+    <line x1="103" y1="244" x2="103" y2="258" stroke="#CBC7BE" stroke-width="0.8"/>
+    <line x1="170" y1="244" x2="170" y2="258" stroke="#CBC7BE" stroke-width="0.8"/>
+    <line x1="237" y1="244" x2="237" y2="258" stroke="#CBC7BE" stroke-width="0.8"/>
+    <line x1="338" y1="244" x2="338" y2="258" stroke="#CBC7BE" stroke-width="0.8"/>
+
+    <!-- Signals ML Engineer -->
+    <g class="role-node" id="rn-sml" data-role="Signals ML Engineer" onclick="orgClick(this)">
+      <rect x="16" y="258" width="64" height="70" rx="6" fill="#E0F4EC" stroke="#5AC4A0" stroke-width="0.9"/>
+      <text x="48" y="276" font-family="Inter,sans-serif" font-size="9.5" font-weight="600" fill="#0D5438" text-anchor="middle" dominant-baseline="central">Signals ML</text>
+      <text x="48" y="290" font-family="Inter,sans-serif" font-size="9.5" font-weight="600" fill="#0D5438" text-anchor="middle" dominant-baseline="central">Engineer</text>
+      <rect x="22" y="304" width="52" height="13" rx="3" fill="#FAF0E0"/>
+      <text x="48" y="312" font-family="Inter,sans-serif" font-size="7.5" font-weight="600" fill="#6B3A00" text-anchor="middle" dominant-baseline="central">Prime</text>
+    </g>
+
+    <!-- Process Optim ML -->
+    <g class="role-node" id="rn-pml" data-role="Process Optim. ML Eng." onclick="orgClick(this)">
+      <rect x="71" y="258" width="64" height="70" rx="6" fill="#E0F4EC" stroke="#5AC4A0" stroke-width="0.9"/>
+      <text x="103" y="273" font-family="Inter,sans-serif" font-size="9.5" font-weight="600" fill="#0D5438" text-anchor="middle" dominant-baseline="central">Process</text>
+      <text x="103" y="287" font-family="Inter,sans-serif" font-size="9.5" font-weight="600" fill="#0D5438" text-anchor="middle" dominant-baseline="central">Optim. ML</text>
+      <text x="103" y="301" font-family="Inter,sans-serif" font-size="9.5" font-weight="600" fill="#0D5438" text-anchor="middle" dominant-baseline="central">Engineer</text>
+      <rect x="77" y="312" width="52" height="13" rx="3" fill="#FAECEC"/>
+      <text x="103" y="320" font-family="Inter,sans-serif" font-size="7.5" font-weight="600" fill="#612020" text-anchor="middle" dominant-baseline="central">Nexus</text>
+    </g>
+
+    <!-- Domain Data Scientist -->
+    <g class="role-node" id="rn-dds" data-role="Domain Data Scientist" onclick="orgClick(this)">
+      <rect x="138" y="258" width="64" height="70" rx="6" fill="#E0F4EC" stroke="#5AC4A0" stroke-width="0.9"/>
+      <text x="170" y="276" font-family="Inter,sans-serif" font-size="9.5" font-weight="600" fill="#0D5438" text-anchor="middle" dominant-baseline="central">Domain</text>
+      <text x="170" y="290" font-family="Inter,sans-serif" font-size="9.5" font-weight="600" fill="#0D5438" text-anchor="middle" dominant-baseline="central">Data Sci.</text>
+      <rect x="144" y="304" width="52" height="13" rx="3" fill="#EFEDE8"/>
+      <text x="170" y="312" font-family="Inter,sans-serif" font-size="7.5" font-weight="600" fill="#4F4D48" text-anchor="middle" dominant-baseline="central">All layers</text>
+    </g>
+
+    <!-- Data / Backend Engineer -->
+    <g class="role-node" id="rn-dbe" data-role="Data / Backend Eng." onclick="orgClick(this)">
+      <rect x="205" y="258" width="64" height="70" rx="6" fill="#E0F4EC" stroke="#5AC4A0" stroke-width="0.9"/>
+      <text x="237" y="276" font-family="Inter,sans-serif" font-size="9.5" font-weight="600" fill="#0D5438" text-anchor="middle" dominant-baseline="central">Data /</text>
+      <text x="237" y="290" font-family="Inter,sans-serif" font-size="9.5" font-weight="600" fill="#0D5438" text-anchor="middle" dominant-baseline="central">Backend</text>
+      <text x="237" y="304" font-family="Inter,sans-serif" font-size="9.5" font-weight="600" fill="#0D5438" text-anchor="middle" dominant-baseline="central">Engineer</text>
+      <rect x="211" y="314" width="52" height="13" rx="3" fill="#D6F0DC"/>
+      <text x="237" y="322" font-family="Inter,sans-serif" font-size="7.5" font-weight="600" fill="#17422B" text-anchor="middle" dominant-baseline="central">Terra</text>
+    </g>
+
+    <!-- Front-end / App Engineer — same row, right end -->
+    <g class="role-node" id="rn-fe" data-role="Front-end / App Eng." onclick="orgClick(this)">
+      <rect x="310" y="258" width="64" height="70" rx="6" fill="#E0F4EC" stroke="#5AC4A0" stroke-width="0.9"/>
+      <text x="342" y="273" font-family="Inter,sans-serif" font-size="9.5" font-weight="600" fill="#0D5438" text-anchor="middle" dominant-baseline="central">Front-end</text>
+      <text x="342" y="287" font-family="Inter,sans-serif" font-size="9.5" font-weight="600" fill="#0D5438" text-anchor="middle" dominant-baseline="central">/ App</text>
+      <text x="342" y="301" font-family="Inter,sans-serif" font-size="9.5" font-weight="600" fill="#0D5438" text-anchor="middle" dominant-baseline="central">Engineer</text>
+      <rect x="316" y="312" width="52" height="13" rx="3" fill="#EDEDFD"/>
+      <text x="342" y="320" font-family="Inter,sans-serif" font-size="7.5" font-weight="600" fill="#312D8A" text-anchor="middle" dominant-baseline="central">Basic · Nexus</text>
+    </g>
+
+    <!-- Product layer ownership panel -->
+    <rect x="20" y="354" width="358" height="216" rx="8" fill="#FFFFFF" stroke="#DDDCF8" stroke-width="0.8"/>
+    <text x="199" y="371" font-family="Inter,sans-serif" font-size="9" font-weight="700" fill="#6864B8" text-anchor="middle" letter-spacing=".5">PRODUCT LAYER OWNERSHIP</text>
+
+    <rect x="28" y="380" width="342" height="34" rx="5" fill="#D6F0DC"/>
+    <text x="42" y="394" font-family="Inter,sans-serif" font-size="9.5" font-weight="600" fill="#17422B" dominant-baseline="central">Stoma Terra</text>
+    <text x="42" y="407" font-family="Inter,sans-serif" font-size="8.5" fill="#1C6B45" dominant-baseline="central">Data / Backend Eng. · infrastructure, ingestion, data lake</text>
+
+    <rect x="28" y="418" width="342" height="34" rx="5" fill="#EDEDFD"/>
+    <text x="42" y="432" font-family="Inter,sans-serif" font-size="9.5" font-weight="600" fill="#312D8A" dominant-baseline="central">Stoma Basic</text>
+    <text x="42" y="445" font-family="Inter,sans-serif" font-size="8.5" fill="#4743A0" dominant-baseline="central">Front-end / App Eng. · dashboards, SPC charts, trend views</text>
+
+    <rect x="28" y="456" width="342" height="34" rx="5" fill="#FAF0E0"/>
+    <text x="42" y="470" font-family="Inter,sans-serif" font-size="9.5" font-weight="600" fill="#6B3A00" dominant-baseline="central">Stoma Prime</text>
+    <text x="42" y="483" font-family="Inter,sans-serif" font-size="8.5" fill="#8A4E00" dominant-baseline="central">Signals ML Eng. · anomaly detection, time/frequency domain</text>
+
+    <rect x="28" y="494" width="342" height="34" rx="5" fill="#FAECEC"/>
+    <text x="42" y="508" font-family="Inter,sans-serif" font-size="9.5" font-weight="600" fill="#612020" dominant-baseline="central">Stoma Nexus</text>
+    <text x="42" y="521" font-family="Inter,sans-serif" font-size="8.5" fill="#7A2A2A" dominant-baseline="central">Process Optim. ML Eng. · digital twin, setpoint prescriptions</text>
+
+    <rect x="28" y="532" width="342" height="26" rx="5" fill="#FDF0F0"/>
+    <text x="199" y="546" font-family="Inter,sans-serif" font-size="8.5" font-weight="600" fill="#B53030" text-anchor="middle" dominant-baseline="central">⚑  Nexus scoping requires Head of Product &amp; AI present</text>
+
+    <!-- ═══════════════════════════════════════════════ -->
+    <!-- SWIM LANE: SELL  x=400–606                     -->
+    <!-- ═══════════════════════════════════════════════ -->
+    <rect x="400" y="162" width="206" height="468" rx="10" fill="#FDF8EE" stroke="#E8D09A" stroke-width="0.8"/>
+    <text x="418" y="179" font-family="Inter,sans-serif" font-size="8.5" font-weight="700" fill="#C8A030" letter-spacing="1.4">SELL</text>
+
+    <!-- GTM Lead -->
+    <g class="role-node" id="rn-gtm" data-role="GTM Lead" onclick="orgClick(this)">
+      <rect x="416" y="186" width="174" height="40" rx="7" fill="#FAF0E0" stroke="#E0B060" stroke-width="1.2"/>
+      <text x="503" y="203" font-family="Inter,sans-serif" font-size="11.5" font-weight="600" fill="#5A3000" text-anchor="middle" dominant-baseline="central">GTM Lead</text>
+      <text x="503" y="218" font-family="Inter,sans-serif" font-size="9" fill="#8A5000" text-anchor="middle" dominant-baseline="central">Revenue pipeline · pricing · expansion</text>
+    </g>
+
+    <line x1="503" y1="226" x2="503" y2="244" stroke="#CBC7BE" stroke-width="0.8"/>
+
+    <!-- Domain Solution Engineers -->
+    <g class="role-node" id="rn-dse" data-role="Domain Solution Eng." onclick="orgClick(this)">
+      <rect x="416" y="244" width="174" height="76" rx="7" fill="#FAF0E0" stroke="#E0B060" stroke-width="0.9"/>
+      <text x="503" y="264" font-family="Inter,sans-serif" font-size="11" font-weight="600" fill="#5A3000" text-anchor="middle" dominant-baseline="central">Domain Solution Eng. ×3</text>
+      <text x="503" y="279" font-family="Inter,sans-serif" font-size="8.5" fill="#8A5000" text-anchor="middle" dominant-baseline="central">Agriculture · Industrial · Logistics</text>
+      <text x="503" y="293" font-family="Inter,sans-serif" font-size="8.5" fill="#8A5000" text-anchor="middle" dominant-baseline="central">70% Sell · 30% Build input</text>
+      <rect x="424" y="303" width="158" height="13" rx="3" fill="#FDF8EE"/>
+      <text x="503" y="311" font-family="Inter,sans-serif" font-size="7.5" font-weight="600" fill="#7A3A00" text-anchor="middle" dominant-baseline="central">Nexus: Head of Product &amp; AI required</text>
+    </g>
+
+    <!-- DSE dotted line to HPA -->
+    <path d="M 416 282 Q 390 282 380 282" fill="none" stroke="#CBC7BE" stroke-width="0.8" stroke-dasharray="5 3" marker-end="url(#ah)"/>
+    <text x="394" y="275" font-family="Inter,sans-serif" font-size="7.5" fill="#B8B4AB" text-anchor="middle">field → product</text>
+
+    <!-- Layer readiness -->
+    <rect x="416" y="338" width="174" height="116" rx="7" fill="#FFFFFF" stroke="#E8D09A" stroke-width="0.7"/>
+    <text x="503" y="354" font-family="Inter,sans-serif" font-size="8.5" font-weight="700" fill="#C8A030" text-anchor="middle" letter-spacing=".4">DSE LAYER READINESS</text>
+    <rect x="424" y="362" width="158" height="22" rx="4" fill="#D6F0DC"/>
+    <text x="503" y="374" font-family="Inter,sans-serif" font-size="8" font-weight="600" fill="#17422B" text-anchor="middle" dominant-baseline="central">Terra / Basic — all three, independently</text>
+    <rect x="424" y="388" width="158" height="22" rx="4" fill="#FAF0E0"/>
+    <text x="503" y="400" font-family="Inter,sans-serif" font-size="8" font-weight="600" fill="#6B3A00" text-anchor="middle" dominant-baseline="central">Prime — technical preparation required</text>
+    <rect x="424" y="414" width="158" height="22" rx="4" fill="#FAECEC"/>
+    <text x="503" y="426" font-family="Inter,sans-serif" font-size="8" font-weight="600" fill="#612020" text-anchor="middle" dominant-baseline="central">Nexus — HPA co-presence mandatory</text>
+
+    <!-- ═══════════════════════════════════════════════ -->
+    <!-- SWIM LANE: KEEP  x=620–908                     -->
+    <!-- ═══════════════════════════════════════════════ -->
+    <rect x="620" y="162" width="288" height="468" rx="10" fill="#FDF2F0" stroke="#E8B8B0" stroke-width="0.8"/>
+    <text x="638" y="179" font-family="Inter,sans-serif" font-size="8.5" font-weight="700" fill="#D08078" letter-spacing="1.4">KEEP</text>
+
+    <!-- CS & Adoption Lead -->
+    <g class="role-node" id="rn-cs" data-role="CS &amp; Adoption Lead" onclick="orgClick(this)">
+      <rect x="638" y="186" width="252" height="40" rx="7" fill="#FAECEC" stroke="#E09898" stroke-width="1.2"/>
+      <text x="764" y="203" font-family="Inter,sans-serif" font-size="11.5" font-weight="600" fill="#5A1818" text-anchor="middle" dominant-baseline="central">CS &amp; Adoption Lead</text>
+      <text x="764" y="218" font-family="Inter,sans-serif" font-size="9" fill="#8A3030" text-anchor="middle" dominant-baseline="central">Field visits · renewals · change management</text>
+    </g>
+
+    <!-- Layered onboarding mandate -->
+    <rect x="638" y="244" width="252" height="202" rx="7" fill="#FFFFFF" stroke="#E8B8B0" stroke-width="0.7"/>
+    <text x="764" y="261" font-family="Inter,sans-serif" font-size="8.5" font-weight="700" fill="#C85040" text-anchor="middle" letter-spacing=".4">LAYERED ONBOARDING MANDATE</text>
+    <rect x="646" y="269" width="236" height="32" rx="5" fill="#D6F0DC"/>
+    <text x="764" y="281" font-family="Inter,sans-serif" font-size="8.5" font-weight="600" fill="#17422B" text-anchor="middle" dominant-baseline="central">Terra — integration go-live validation</text>
+    <text x="764" y="294" font-family="Inter,sans-serif" font-size="8" fill="#2D6A4F" text-anchor="middle" dominant-baseline="central">confirm data flows before client rollout</text>
+    <rect x="646" y="305" width="236" height="32" rx="5" fill="#EDEDFD"/>
+    <text x="764" y="317" font-family="Inter,sans-serif" font-size="8.5" font-weight="600" fill="#312D8A" text-anchor="middle" dominant-baseline="central">Basic — operator dashboard adoption</text>
+    <text x="764" y="330" font-family="Inter,sans-serif" font-size="8" fill="#4743A0" text-anchor="middle" dominant-baseline="central">usage patterns · SPC interpretation training</text>
+    <rect x="646" y="341" width="236" height="32" rx="5" fill="#FAF0E0"/>
+    <text x="764" y="353" font-family="Inter,sans-serif" font-size="8.5" font-weight="600" fill="#6B3A00" text-anchor="middle" dominant-baseline="central">Prime — anomaly alert trust-building</text>
+    <text x="764" y="366" font-family="Inter,sans-serif" font-size="8" fill="#8A4E00" text-anchor="middle" dominant-baseline="central">response protocol training · alert review</text>
+    <rect x="646" y="377" width="236" height="32" rx="5" fill="#FAECEC"/>
+    <text x="764" y="389" font-family="Inter,sans-serif" font-size="8.5" font-weight="600" fill="#612020" text-anchor="middle" dominant-baseline="central">Nexus — prescription adoption</text>
+    <text x="764" y="402" font-family="Inter,sans-serif" font-size="8" fill="#7A2A2A" text-anchor="middle" dominant-baseline="central">90-day programme · HPA + DSE joint involvement</text>
+    <rect x="646" y="413" width="236" height="26" rx="5" fill="#FDF0F0"/>
+    <text x="764" y="427" font-family="Inter,sans-serif" font-size="8" font-weight="600" fill="#B53030" text-anchor="middle" dominant-baseline="central">⚑  CS holds veto over next-layer expansion timing</text>
+
+    <!-- Scale trigger -->
+    <rect x="638" y="460" width="252" height="52" rx="7" fill="#FFFFFF" stroke="#E8B8B0" stroke-width="0.7"/>
+    <text x="764" y="476" font-family="Inter,sans-serif" font-size="8.5" font-weight="700" fill="#C85040" text-anchor="middle" letter-spacing=".4">SCALE TRIGGER</text>
+    <text x="764" y="491" font-family="Inter,sans-serif" font-size="8.5" fill="#8A3030" text-anchor="middle" dominant-baseline="central">At 6 active accounts: split into Account Manager</text>
+    <text x="764" y="504" font-family="Inter,sans-serif" font-size="8.5" fill="#8A3030" text-anchor="middle" dominant-baseline="central">+ Change Management &amp; Training Specialist</text>
+
+    <!-- ═══════════════════════════════════════════════ -->
+    <!-- SHARED SERVICES                                 -->
+    <!-- ═══════════════════════════════════════════════ -->
+    <rect x="12" y="648" width="896" height="56" rx="9" fill="#EFEDE8" stroke="#CBC7BE" stroke-width="0.8"/>
+    <text x="460" y="664" font-family="Inter,sans-serif" font-size="8.5" font-weight="700" fill="#B8B4AB" text-anchor="middle" letter-spacing="1.2">SHARED SERVICES</text>
+    <g class="role-node" id="rn-fs" data-role="Findability Sci." onclick="orgClick(this)">
+      <rect x="60" y="670" width="800" height="26" rx="5" fill="#FAFAF8" stroke="#CBC7BE" stroke-width="0.8"/>
+      <text x="460" y="684" font-family="Inter,sans-serif" font-size="9" fill="#4F4D48" text-anchor="middle" dominant-baseline="central">Findability Sciences — Finance · Legal (IP &amp; data isolation) · HR · DevOps / Platform Ops · QA · Security</text>
+    </g>
+
+  </svg>
+  </div><!-- end org-svg-wrap -->
+
+  <div class="org-legend">
+    <div class="leg-item"><div class="leg-dot" style="background:#E4E3DE;border:1px solid #AAA89E"></div>Governance</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#EDEDFD;border:1px solid #AEAAE8"></div>Build · Head of Product &amp; AI</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#E0F4EC;border:1px solid #5AC4A0"></div>Build · engineering roles</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#FAF0E0;border:1px solid #E0B060"></div>Sell</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#FAECEC;border:1px solid #E09898"></div>Keep</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#EFEDE8;border:1px solid #CBC7BE"></div>Shared services</div>
+    <div class="leg-item" style="color:#B53030;font-weight:500;font-size:11px">⚑ Critical protocol</div>
+    <div class="leg-item">
+      <svg width="26" height="8" viewBox="0 0 26 8"><line x1="0" y1="4" x2="26" y2="4" stroke="#CBC7BE" stroke-width="1" stroke-dasharray="5 3"/></svg>
+      Dual / functional line
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════ -->
+<!-- TAB 2: WORKING PROTOCOLS                                 -->
+<!-- ════════════════════════════════════════════════════════ -->
+<div class="tab-panel" id="panel-protocols">
+<div class="controls">
+  <div class="search-wrap">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input type="text" id="search" placeholder="Search protocols, roles, topics…" oninput="applyFilters()">
+  </div>
+  <div class="divider-v"></div>
+  <div class="filter-group">
+    <span class="fl">Layer</span>
+    <span class="chip terra" data-layer="Terra" onclick="toggleChip(this,'layer')">Terra</span>
+    <span class="chip basic" data-layer="Basic" onclick="toggleChip(this,'layer')">Basic</span>
+    <span class="chip prime" data-layer="Prime" onclick="toggleChip(this,'layer')">Prime</span>
+    <span class="chip nexus" data-layer="Nexus" onclick="toggleChip(this,'layer')">Nexus</span>
+    <span class="chip cross" data-layer="Cross" onclick="toggleChip(this,'layer')">Cross</span>
+  </div>
+  <div class="divider-v"></div>
+  <div class="filter-group">
+    <span class="fl">Type</span>
+    <span class="chip" data-type="Decision" onclick="toggleChip(this,'type')">Decision</span>
+    <span class="chip" data-type="Handoff" onclick="toggleChip(this,'type')">Handoff</span>
+    <span class="chip" data-type="Feedback loop" onclick="toggleChip(this,'type')">Feedback</span>
+    <span class="chip" data-type="Escalation" onclick="toggleChip(this,'type')">Escalation</span>
+    <span class="chip" data-type="Sync / alignment" onclick="toggleChip(this,'type')">Sync</span>
+    <span class="chip" data-type="Review / approval" onclick="toggleChip(this,'type')">Review</span>
+  </div>
+  <div class="divider-v"></div>
+  <span class="count-pill"><strong id="shown-count">57</strong>&nbsp;protocols shown</span>
+  <button class="btn-sm btn-reset" onclick="resetAll()">Reset filters</button>
+</div>
+<div class="role-bar" id="role-bar"><span class="fl" style="margin-right:6px;align-self:center">Filter by role</span></div>
+<div class="content" id="content"></div>
+</div>
+
+<!-- ══════════════════════ SCRIPTS ══════════════════════ -->
+<script>
+var RM={
+  'General Manager':        {bg:'#EFEDE8',tx:'#2A2922'},
+  'Head of Product & AI':   {bg:'#EDEDFD',tx:'#312D8A'},
+  'Signals ML Engineer':    {bg:'#E0F4EC',tx:'#0D5438'},
+  'Process Optim. ML Eng.': {bg:'#E0F4EC',tx:'#0D5438'},
+  'Domain Data Scientist':  {bg:'#E0F4EC',tx:'#0D5438'},
+  'Data / Backend Eng.':    {bg:'#E0F4EC',tx:'#0D5438'},
+  'Front-end / App Eng.':   {bg:'#E0F4EC',tx:'#0D5438'},
+  'GTM Lead':               {bg:'#FAF0E0',tx:'#5A3000'},
+  'Domain Solution Eng.':   {bg:'#FAF0E0',tx:'#5A3000'},
+  'CS & Adoption Lead':     {bg:'#FAECEC',tx:'#5A1818'},
+  'Steering Committee':     {bg:'#EFEDE8',tx:'#4F4D48'},
+  'Findability Sci.':       {bg:'#EFEDE8',tx:'#4F4D48'}
+};
+var TY={
+  'Decision':{bg:'#E6F1FB',tx:'#0C447C'},
+  'Handoff':{bg:'#EDEDFD',tx:'#312D8A'},
+  'Feedback loop':{bg:'#E0F4EC',tx:'#17422B'},
+  'Sync / alignment':{bg:'#FAF0E0',tx:'#6B3A00'},
+  'Escalation':{bg:'#FAECEC',tx:'#612020'},
+  'Review / approval':{bg:'#EFEDE8',tx:'#4F4D48'}
+};
+var LY={
+  'Terra':{bg:'#D6F0DC',tx:'#17422B'},
+  'Basic':{bg:'#EDEDFD',tx:'#312D8A'},
+  'Prime':{bg:'#FAF0E0',tx:'#6B3A00'},
+  'Nexus':{bg:'#FAECEC',tx:'#612020'},
+  'Cross':{bg:'#EFEDE8',tx:'#4F4D48'}
+};
+var SD={
+  'Governance':'#B8B4AB',
+  'Build — Head of Product & AI':'#9B97E4',
+  'Build — Signals ML Engineer':'#5AC4A0',
+  'Build — Process Optim. ML Engineer':'#5AC4A0',
+  'Build — Domain Data Scientist':'#5AC4A0',
+  'Build — Data / Backend Engineer':'#5AC4A0',
+  'Build — Front-end / App Engineer':'#5AC4A0',
+  'Sell — GTM Lead':'#C8A030',
+  'Sell — Domain Solution Engineers':'#C8A030',
+  'Keep — CS & Adoption Lead':'#C85040',
+  'Cross-pillar':'#B8B4AB'
+};
+var CRIT=['Process model validation with Domain DS','Domain knowledge debrief — field to product','Terra data quality gate enforcement','Mandatory Nexus scoping co-presence','CS layer adoption readiness confirmation','Commercial handoff on contract signature','Nexus physical plausibility violation','Client data isolation architecture sign-off'];
+var DATA=[
+  {sec:'Governance',f:'General Manager',t:'Steering Committee',i:'Venture health report',d:'P&L, pipeline by layer, delivery status, team health, and risks. GM presents; Steering Committee approves or redirects.',ca:'Monthly',ty:'Escalation',ly:'Cross'},
+  {sec:'Governance',f:'Steering Committee',t:'General Manager',i:'Strategic direction and resource decisions',d:'Budget approvals, partner commitment changes, market expansion decisions. Steering Committee decides; GM executes.',ca:'Monthly',ty:'Decision',ly:'Cross'},
+  {sec:'Governance',f:'General Manager',t:'Steering Committee',i:'Cross-partner conflict escalation',d:'Any dispute between Pantaleon and Findability Sciences that the GM cannot resolve unilaterally.',ca:'As needed',ty:'Escalation',ly:'Cross'},
+  {sec:'Governance',f:'General Manager',t:'Head of Product & AI',i:'Priority alignment across all four layers',d:'GM communicates venture-level priorities; resolves conflicts between layer roadmap demands and commercial pipeline.',ca:'Weekly',ty:'Decision',ly:'Cross'},
+  {sec:'Governance',f:'General Manager',t:'GTM Lead',i:'Pipeline review and commercial direction',d:'Reviews pipeline health, validates pricing above GTM authority, confirms layer sequencing in active deals.',ca:'Weekly',ty:'Decision',ly:'Cross'},
+  {sec:'Governance',f:'General Manager',t:'CS & Adoption Lead',i:'Account health review',d:'Reviews account health metrics, renewal risks, and expansion pipeline. Identifies accounts needing executive presence.',ca:'Bi-weekly',ty:'Sync / alignment',ly:'Cross'},
+  {sec:'Governance',f:'General Manager',t:'Findability Sci.',i:'Shared services SLA review',d:'Reviews Finance, DevOps, Legal, HR, and Security service delivery against agreed SLAs. Includes Terra uptime and data isolation compliance.',ca:'Monthly',ty:'Review / approval',ly:'Cross'},
+  {sec:'Governance',f:'Head of Product & AI',t:'General Manager',i:'Third-party vendor SLA escalation',d:'When a satellite provider, climate API, or IoT platform misses a contractual SLA, escalated to GM for commercial renegotiation.',ca:'As needed',ty:'Escalation',ly:'Terra'},
+  {sec:'Governance',f:'General Manager',t:'Domain Solution Eng.',i:'DSE time allocation review',d:'Reviews the 70/30 Sell/Build time split against actual logs. Adjusts protocol when commercial pressure consistently crowds out the product feedback contribution.',ca:'Monthly',ty:'Sync / alignment',ly:'Cross'},
+  {sec:'Build — Head of Product & AI',f:'Head of Product & AI',t:'Signals ML Engineer',i:'Prime model work prioritisation',d:'Assigns anomaly detection tasks, defines acceptance criteria, and approves Prime model releases. No Prime model reaches production without sign-off.',ca:'Per sprint',ty:'Decision',ly:'Prime'},
+  {sec:'Build — Head of Product & AI',f:'Head of Product & AI',t:'Process Optim. ML Eng.',i:'Nexus world model and optimisation priorities',d:'Assigns digital twin and solver tasks with explicit scope boundaries. Any Nexus commitment to a client requires sign-off before external communication.',ca:'Per sprint',ty:'Decision',ly:'Nexus'},
+  {sec:'Build — Head of Product & AI',f:'Head of Product & AI',t:'Domain Data Scientist',i:'Domain validation work assignment',d:'Assigns Domain DS across layers — satellite interpretation (Terra), assumption checks (Prime), plausibility review (Nexus). Domain DS time is scarce and managed centrally.',ca:'Per sprint',ty:'Decision',ly:'Cross'},
+  {sec:'Build — Head of Product & AI',f:'Head of Product & AI',t:'Data / Backend Eng.',i:'Data lake and pipeline priorities',d:'Assigns Terra architecture tasks and enforces data quality SLA thresholds. If Terra data fails quality gates, Prime deployment is blocked.',ca:'Per sprint',ty:'Decision',ly:'Terra'},
+  {sec:'Build — Head of Product & AI',f:'Head of Product & AI',t:'Front-end / App Eng.',i:'Basic UI direction and sprint tasks',d:'Defines dashboard features, reviews designs against the mill operator usability bar, and approves all Basic releases.',ca:'Per sprint',ty:'Decision',ly:'Basic'},
+  {sec:'Build — Head of Product & AI',f:'Head of Product & AI',t:'Front-end / App Eng.',i:'Nexus decision-support interface direction',d:'Active design direction for Nexus UI — how prescriptions, confidence bounds, and uncertainty are displayed. Process Optim. ML Eng. participates. Approves designs before development begins.',ca:'Per Nexus milestone',ty:'Decision',ly:'Nexus'},
+  {sec:'Build — Head of Product & AI',f:'Head of Product & AI',t:'Head of Product & AI',i:'Backlog grooming and sprint planning',d:'Weekly Build team review. Aligns sprint goals with roadmap, CS field feedback, and DSE debriefs. Maintains explicit capacity splits across all four layers.',ca:'Weekly',ty:'Review / approval',ly:'Cross'},
+  {sec:'Build — Head of Product & AI',f:'Head of Product & AI',t:'Head of Product & AI',i:'Data governance gate enforcement',d:'Reviews every new data source and model design before ingestion. Verifies client data isolation in Terra architecture. Blocks any release that violates the governance policy.',ca:'Per model',ty:'Review / approval',ly:'Cross'},
+  {sec:'Build — Head of Product & AI',f:'Head of Product & AI',t:'Domain Solution Eng.',i:'Product capability briefing for DSEs',d:'Briefs DSEs on upcoming releases, new capabilities, known limitations, and updated layer-readiness ratings. DSEs must not represent any capability that has not been cleared.',ca:'Bi-weekly',ty:'Sync / alignment',ly:'Cross'},
+  {sec:'Build — Head of Product & AI',f:'Head of Product & AI',t:'Domain Solution Eng.',i:'Mandatory Nexus scoping co-presence',d:'No Nexus scoping conversation occurs without Head of Product & AI present alongside the DSE. Defines what Nexus can and cannot commit to for the client\'s data and process situation. Hard rule — no exceptions.',ca:'Per Nexus opportunity',ty:'Decision',ly:'Nexus'},
+  {sec:'Build — Head of Product & AI',f:'Head of Product & AI',t:'Findability Sci.',i:'Release package to DevOps',d:'Hands off tested, approved release packages across all four layers. Each includes plain-language release notes, rollback instructions, and infrastructure change requirements.',ca:'Per release',ty:'Handoff',ly:'Cross'},
+  {sec:'Build — Head of Product & AI',f:'Head of Product & AI',t:'Findability Sci.',i:'Domain QA co-review',d:'Reviews domain-specific test cases with FS QA — mill edge cases, SPC threshold behaviour, anomaly false positive scenarios, and Nexus prescription safety scenarios.',ca:'Quarterly',ty:'Review / approval',ly:'Cross'},
+  {sec:'Build — Head of Product & AI',f:'Head of Product & AI',t:'CS & Adoption Lead',i:'Release notes for client communication',d:'Provides CS with plain-language release notes per layer before each deployment. CS uses these to prepare operators and set accurate expectations.',ca:'Per release',ty:'Handoff',ly:'Cross'},
+  {sec:'Build — Head of Product & AI',f:'Head of Product & AI',t:'CS & Adoption Lead',i:'Adoption-driven roadmap review',d:'Reviews adoption metrics with CS per layer. Features with low usage trigger a joint diagnosis — product issue, UX issue, or change management issue — each requiring a different response.',ca:'Monthly',ty:'Sync / alignment',ly:'Cross'},
+  {sec:'Build — Head of Product & AI',f:'Head of Product & AI',t:'GTM Lead',i:'Sales enablement for new capabilities',d:'Prepares GTM Lead and DSEs for each release: what changed, commercial positioning, known limitations, and updated DSE layer-readiness ratings.',ca:'Per release',ty:'Handoff',ly:'Cross'},
+  {sec:'Build — Head of Product & AI',f:'Head of Product & AI',t:'Data / Backend Eng.',i:'Client data isolation architecture sign-off',d:'Before any new client data enters the Terra data lake, sign-off is required on the isolation architecture. Confirms Client A data cannot cross-contaminate Client B models. Legal reviews simultaneously.',ca:'Per client',ty:'Review / approval',ly:'Terra'},
+  {sec:'Build — Signals ML Engineer',f:'Signals ML Engineer',t:'Head of Product & AI',i:'Prime model performance and risk flags',d:'Reports anomaly detection accuracy, precision/recall, false positive rates, and production drift. Flags Terra data quality issues that are degrading Prime outputs — the primary early warning for Prime quality.',ca:'Per sprint',ty:'Feedback loop',ly:'Prime'},
+  {sec:'Build — Signals ML Engineer',f:'Signals ML Engineer',t:'Data / Backend Eng.',i:'Sensor data specification to Data Engineer',d:'Specifies required sensor formats, sampling rates, frequency domain transformation requirements, and training dataset schemas. Deviations from spec must be flagged before training begins.',ca:'Per sprint',ty:'Handoff',ly:'Prime'},
+  {sec:'Build — Signals ML Engineer',f:'Data / Backend Eng.',t:'Signals ML Engineer',i:'Validated sensor data feeds to Signals ML',d:'Delivers processed, schema-validated sensor data from Terra pipelines, including a quality report: completeness, gap frequency, sampling consistency, and ingestion anomalies.',ca:'Per sprint',ty:'Handoff',ly:'Prime'},
+  {sec:'Build — Signals ML Engineer',f:'Signals ML Engineer',t:'Front-end / App Eng.',i:'Anomaly output spec to front-end',d:'Defines anomaly output formats, confidence scores, threshold values, and recommended display ranges for SPC-aware alert views in the application.',ca:'Per release',ty:'Handoff',ly:'Prime'},
+  {sec:'Build — Signals ML Engineer',f:'Signals ML Engineer',t:'Domain Data Scientist',i:'Domain validation of anomaly model assumptions',d:'Presents model features and detected patterns to Domain DS for operational sanity check. Domain DS confirms whether flagged anomalies reflect real process events or are sensor artefacts.',ca:'Bi-weekly',ty:'Sync / alignment',ly:'Prime'},
+  {sec:'Build — Signals ML Engineer',f:'Signals ML Engineer',t:'Process Optim. ML Eng.',i:'Prime-to-Nexus signals handoff planning',d:'Aligns on anomaly output formats that maximise Nexus usability — degradation signals are more valuable to a prescriptive system than binary alerts.',ca:'Monthly',ty:'Sync / alignment',ly:'Prime'},
+  {sec:'Build — Signals ML Engineer',f:'Signals ML Engineer',t:'Head of Product & AI',i:'Terra data quality gate breach',d:'When Terra data falls below thresholds required for reliable Prime inference, escalated to Head of Product & AI immediately. A decision is then made whether to block outputs or flag confidence degradation to clients via CS.',ca:'As needed',ty:'Escalation',ly:'Terra'},
+  {sec:'Build — Process Optim. ML Engineer',f:'Process Optim. ML Eng.',t:'Head of Product & AI',i:'World model progress and risks',d:'Reports digital twin calibration progress, solver behaviour, uncertainty results, and process boundary violations. Flags when client process data is insufficient for a reliable world model — a critical commercial risk signal.',ca:'Per sprint',ty:'Feedback loop',ly:'Nexus'},
+  {sec:'Build — Process Optim. ML Engineer',f:'Process Optim. ML Eng.',t:'Domain Data Scientist',i:'Process model validation with Domain DS',d:'The most intensive collaboration in the Build team. Presents world model structure and prescription samples to Domain DS for physical plausibility review. Domain DS confirms prescriptions respect operational constraints and safety limits before any client sees them.',ca:'Weekly',ty:'Sync / alignment',ly:'Nexus'},
+  {sec:'Build — Process Optim. ML Engineer',f:'Domain Data Scientist',t:'Process Optim. ML Eng.',i:'Domain constraints and process boundary inputs',d:'Provides process engineering constraints — temperature limits, throughput bounds, equipment ranges, known interaction effects — that the world model must respect. These inputs determine whether operators will trust and act on prescriptions.',ca:'Weekly',ty:'Feedback loop',ly:'Nexus'},
+  {sec:'Build — Process Optim. ML Engineer',f:'Process Optim. ML Eng.',t:'Domain Solution Eng.',i:'Pre-scoping technical briefing for DSE',d:'Before any Nexus scoping conversation, briefs the relevant DSE on what the world model can and cannot represent for the client\'s specific process.',ca:'Per Nexus opportunity',ty:'Sync / alignment',ly:'Nexus'},
+  {sec:'Build — Process Optim. ML Engineer',f:'Process Optim. ML Eng.',t:'Front-end / App Eng.',i:'Prescription output spec and uncertainty bounds',d:'Defines setpoint recommendation formats, confidence intervals, uncertainty bounds, and how out-of-distribution inputs are handled. Front-end designs the Nexus interface against these specs — operator safety depends on this being displayed correctly.',ca:'Per Nexus milestone',ty:'Handoff',ly:'Nexus'},
+  {sec:'Build — Process Optim. ML Engineer',f:'Process Optim. ML Eng.',t:'CS & Adoption Lead',i:'Nexus model limitations briefing for CS',d:'Before Nexus onboarding begins, briefs CS on what the deployed world model can and cannot do, which scenarios are outside its reliable range, and the correct operator response when a prescription seems wrong.',ca:'Per Nexus deployment',ty:'Sync / alignment',ly:'Nexus'},
+  {sec:'Build — Domain Data Scientist',f:'Domain Data Scientist',t:'Head of Product & AI',i:'Model assumption validation findings',d:'Reports validation findings across all layers — satellite index interpretation (Terra), SPC threshold relevance (Basic), sensor anomaly plausibility (Prime), process constraint adherence (Nexus). Critical findings escalate immediately.',ca:'Per sprint',ty:'Feedback loop',ly:'Cross'},
+  {sec:'Build — Domain Data Scientist',f:'Domain Data Scientist',t:'Signals ML Engineer',i:'Operational context for anomaly interpretation',d:'Provides operational context that pure signal analysis cannot supply — scheduled maintenance causing false anomalies, equipment behaviour patterns, and seasonal sugarcane variations that affect sensor baselines.',ca:'Bi-weekly',ty:'Feedback loop',ly:'Prime'},
+  {sec:'Build — Domain Data Scientist',f:'Domain Data Scientist',t:'Head of Product & AI',i:'Nexus physical plausibility violation',d:'If a world model prescription violates physical process constraints or could create a safety-relevant condition, work on that model branch stops immediately. No timeline pressure overrides this escalation.',ca:'As needed',ty:'Escalation',ly:'Nexus'},
+  {sec:'Build — Domain Data Scientist',f:'Domain Data Scientist',t:'Domain Solution Eng.',i:'Domain knowledge capture from DSE debriefs',d:'Participates in or reviews DSE post-engagement notes to extract model-relevant domain knowledge — process observations, client-specific operating quirks, and assumption gaps found in client conversations.',ca:'Bi-weekly',ty:'Sync / alignment',ly:'Cross'},
+  {sec:'Build — Data / Backend Engineer',f:'Data / Backend Eng.',t:'Head of Product & AI',i:'Terra pipeline health and data quality report',d:'Reports ingestion uptime, data freshness SLA adherence, schema drift events, and quality scores across all Terra sources. When quality breaches Prime SLA thresholds, the escalation protocol is triggered.',ca:'Per sprint',ty:'Feedback loop',ly:'Terra'},
+  {sec:'Build — Data / Backend Engineer',f:'Data / Backend Eng.',t:'Head of Product & AI',i:'IoT platform or data source integration failure',d:'When a third-party integration fails or produces corrupt data, escalated to Head of Product & AI immediately. A decision is then made whether to notify CS of client-facing impact and whether to trigger the incident runbook.',ca:'As needed',ty:'Escalation',ly:'Terra'},
+  {sec:'Build — Data / Backend Engineer',f:'Data / Backend Eng.',t:'Front-end / App Eng.',i:'API contracts and data endpoints to front-end',d:'Provides and maintains API specifications for all endpoints consumed by Basic and Nexus front-end. API contract changes require joint review — undisclosed changes causing front-end breakages are a release blocker.',ca:'Per sprint',ty:'Handoff',ly:'Basic'},
+  {sec:'Build — Data / Backend Engineer',f:'Data / Backend Eng.',t:'Findability Sci.',i:'Infrastructure and DevOps alignment',d:'Aligns with FS DevOps on cloud infrastructure provisioning, CI/CD configuration, and monitoring for the Terra data lake and Prime inference infrastructure.',ca:'Bi-weekly',ty:'Sync / alignment',ly:'Terra'},
+  {sec:'Build — Front-end / App Engineer',f:'Front-end / App Eng.',t:'Head of Product & AI',i:'Front-end feasibility and mill environment constraints',d:'Reports technical constraints discovered during development — performance under limited connectivity, rendering issues on older devices, UX patterns that confused operators in field testing. Mill environment constraints are non-negotiable.',ca:'Per sprint',ty:'Feedback loop',ly:'Cross'},
+  {sec:'Build — Front-end / App Engineer',f:'Front-end / App Eng.',t:'CS & Adoption Lead',i:'Basic UI usability findings from field visits',d:'CS shares specific operator usability observations from mill visits directly to Front-end Engineer. Field observation to UI change should take days, not quarters — the fastest feedback loop in the product.',ca:'Bi-weekly',ty:'Feedback loop',ly:'Basic'},
+  {sec:'Build — Front-end / App Engineer',f:'CS & Adoption Lead',t:'Front-end / App Eng.',i:'Structured operator feedback for dashboard iteration',d:'CS captures and delivers operator feedback in actionable form: specific UI elements causing confusion, missing chart context, and alert formats operators do not understand.',ca:'Bi-weekly',ty:'Feedback loop',ly:'Basic'},
+  {sec:'Build — Front-end / App Engineer',f:'Front-end / App Eng.',t:'CS & Adoption Lead',i:'Nexus interface walkthrough for CS onboarding prep',d:'Before each Nexus UI release, walks CS through interface changes — how prescriptions are displayed, how confidence is communicated, and what the override mechanism looks like. CS must understand the interface before arriving at a client mill.',ca:'Per Nexus release',ty:'Handoff',ly:'Nexus'},
+  {sec:'Sell — GTM Lead',f:'GTM Lead',t:'Domain Solution Eng.',i:'DSE assignment using layer-readiness framework',d:'Assigns DSEs to opportunities based on domain fit and layer-readiness rating. Nexus engagements: DSE plus mandatory Head of Product & AI co-presence — availability coordinated before the conversation is scheduled.',ca:'Per opportunity',ty:'Decision',ly:'Cross'},
+  {sec:'Sell — GTM Lead',f:'GTM Lead',t:'Head of Product & AI',i:'GTM and roadmap alignment',d:'Shares pipeline priorities, prospect feature requests, and common objections by layer. Head of Product & AI shares upcoming releases that affect sales narratives. Critical alignment: what can be promised at each layer given current Build capacity.',ca:'Bi-weekly',ty:'Sync / alignment',ly:'Cross'},
+  {sec:'Sell — GTM Lead',f:'GTM Lead',t:'General Manager',i:'Pipeline and forecast update',d:'Presents deal pipeline by stage and layer, revenue forecast, win/loss signals, and pricing decisions requiring GM approval. GM confirms layer sequencing in active deals — no Nexus commitment without sign-off.',ca:'Weekly',ty:'Review / approval',ly:'Cross'},
+  {sec:'Sell — GTM Lead',f:'GTM Lead',t:'CS & Adoption Lead',i:'Commercial handoff on contract signature',d:'On contract signature, transfers to CS: contract terms, layers in scope, commitments made during sales, key contacts and their technical readiness, integration constraints discovered during discovery, and success criteria agreed with the client. A one-page handoff document is mandatory.',ca:'Per new account',ty:'Handoff',ly:'Cross'},
+  {sec:'Sell — GTM Lead',f:'GTM Lead',t:'CS & Adoption Lead',i:'Renewal and expansion coordination',d:'Aligns on accounts approaching renewal and candidates for next-layer expansion. CS confirms adoption is solid before GTM proposes any expansion. This check is non-negotiable.',ca:'Monthly',ty:'Sync / alignment',ly:'Cross'},
+  {sec:'Sell — GTM Lead',f:'GTM Lead',t:'Head of Product & AI',i:'Win/loss analysis by layer',d:'Shares structured win/loss data segmented by product layer — which layer drove wins, which features were decisive in losses, and how prospects responded to each layer\'s value proposition.',ca:'Monthly',ty:'Feedback loop',ly:'Cross'},
+  {sec:'Sell — GTM Lead',f:'GTM Lead',t:'CS & Adoption Lead',i:'Reference client and case study identification',d:'Identifies accounts as candidates for reference calls or case studies, aligned by layer. CS confirms client willingness and coordinates the story capture.',ca:'Quarterly',ty:'Feedback loop',ly:'Cross'},
+  {sec:'Sell — Domain Solution Engineers',f:'Domain Solution Eng.',t:'GTM Lead',i:'Post-engagement debrief to GTM Lead',d:'After every client interaction: deal fit assessment, data availability findings, integration complexity estimate, competitive intelligence, and whether the proposed layer scope is realistic. GTM Lead updates deal stage accordingly.',ca:'Per engagement',ty:'Feedback loop',ly:'Cross'},
+  {sec:'Sell — Domain Solution Engineers',f:'Domain Solution Eng.',t:'Head of Product & AI',i:'Domain knowledge debrief — field to product',d:'Shares what client conversations revealed: mill process nuances not reflected in models, data quality patterns affecting Terra, operator concerns about Prime alerts, and reactions to Nexus concept discussions. The most valuable product intelligence feed — must not be deprioritised.',ca:'Bi-weekly',ty:'Feedback loop',ly:'Cross'},
+  {sec:'Sell — Domain Solution Engineers',f:'Domain Solution Eng.',t:'CS & Adoption Lead',i:'Full technical context transfer to CS',d:'After deal close and before onboarding begins: all technical commitments made during sales, IT infrastructure constraints, data availability as discovered during discovery, key operator contacts, and concerns raised about specific layers.',ca:'Post-close',ty:'Handoff',ly:'Cross'},
+  {sec:'Sell — Domain Solution Engineers',f:'Domain Solution Eng.',t:'CS & Adoption Lead',i:'Active DSE support during onboarding',d:'DSE actively participates in onboarding for the first 90 days in their domain — not a one-time handoff but ongoing participation alongside CS. Domain credibility is most needed precisely when operators are deciding whether to trust the product\'s outputs.',ca:'Per domain launch',ty:'Handoff',ly:'Cross'},
+  {sec:'Keep — CS & Adoption Lead',f:'CS & Adoption Lead',t:'Head of Product & AI',i:'Field product feedback — segmented by layer',d:'Delivers structured field observations per layer: Basic dashboard usage patterns, Prime alert response behaviour, Nexus prescription acceptance rates and override frequency. Cannot be replaced by analytics data alone — operators explain things to CS that dashboards never capture.',ca:'Bi-weekly',ty:'Feedback loop',ly:'Cross'},
+  {sec:'Keep — CS & Adoption Lead',f:'CS & Adoption Lead',t:'GTM Lead',i:'Account expansion readiness intelligence',d:'Reports which accounts have achieved solid adoption of their current layer and are ready for the next. Explicitly flags fragile accounts — GTM must not approach these for expansion regardless of commercial pressure.',ca:'Monthly',ty:'Feedback loop',ly:'Cross'},
+  {sec:'Keep — CS & Adoption Lead',f:'CS & Adoption Lead',t:'General Manager',i:'Account churn risk escalation',d:'Escalates accounts showing adoption failure, relationship deterioration, or renewal risk to GM with sufficient lead time for executive intervention. Nexus accounts carry the highest churn risk if prescription usage stalls.',ca:'As needed',ty:'Escalation',ly:'Cross'},
+  {sec:'Keep — CS & Adoption Lead',f:'CS & Adoption Lead',t:'Head of Product & AI',i:'Client-facing incident communication',d:'CS owns all client communication during service or model incidents. Head of Product & AI provides accurate technical status within defined timeframes per the incident runbook. CS never goes silent to a client. For Nexus incidents where operators may have acted on a faulty prescription, GM is immediately notified.',ca:'Per incident',ty:'Escalation',ly:'Cross'},
+  {sec:'Keep — CS & Adoption Lead',f:'CS & Adoption Lead',t:'Findability Sci.',i:'Infrastructure incident declaration to DevOps',d:'CS declares an incident to FS DevOps when a client reports a service outage. DevOps handles technical resolution; CS manages client communication. For Terra outages, CS communicates the downstream impact on Basic dashboards and Prime alerts, not just the outage itself.',ca:'Per incident',ty:'Escalation',ly:'Terra'},
+  {sec:'Keep — CS & Adoption Lead',f:'CS & Adoption Lead',t:'Head of Product & AI',i:'Layer adoption readiness confirmation',d:'Before Head of Product & AI and GTM Lead agree to deploy a new layer at an existing account, CS confirms that the current layer is genuinely adopted — usage rates, operator confidence, and management trust in outputs. CS holds veto authority over expansion timing based on adoption readiness.',ca:'Per layer launch',ty:'Handoff',ly:'Cross'},
+  {sec:'Cross-pillar',f:'Head of Product & AI',t:'CS & Adoption Lead',i:'Nexus prescription adoption review',d:'Joint assessment of active Nexus deployments: prescription acceptance rate, operator override frequency (high overrides indicate low trust), and whether the 90-day adoption programme is producing the expected behaviour change. If stalling, a joint intervention is designed.',ca:'Monthly',ty:'Sync / alignment',ly:'Nexus'},
+  {sec:'Cross-pillar',f:'Process Optim. ML Eng.',t:'CS & Adoption Lead',i:'Nexus model behaviour briefing before field visits',d:'Before each mill visit at a Nexus account, Process Optim. ML Eng. briefs CS: what the model has been recommending, where it is most and least confident, scenarios not yet tested, and the correct operator response when a prescription seems wrong.',ca:'Per Nexus deployment',ty:'Sync / alignment',ly:'Nexus'},
+  {sec:'Cross-pillar',f:'General Manager',t:'Head of Product & AI',i:'Roadmap strategic review by layer',d:'GM reviews the full product roadmap by layer: Terra infrastructure debt, Basic feature completeness, Prime model maturity, and Nexus deployment pipeline. Validates that Build priorities are aligned with commercial traction.',ca:'Quarterly',ty:'Decision',ly:'Cross'},
+  {sec:'Cross-pillar',f:'General Manager',t:'GTM Lead',i:'Pricing and packaging strategy review by layer',d:'Reviews and approves pricing for each Stoma layer, expansion pricing, and discount authority. Ensures the Terra-to-Nexus expansion model is commercially coherent and that early Nexus pricing reflects its co-development nature.',ca:'Quarterly',ty:'Decision',ly:'Cross'},
+  {sec:'Cross-pillar',f:'Findability Sci.',t:'Head of Product & AI',i:'Infrastructure incident technical report',d:'FS DevOps reports Terra incidents, uptime breaches, and root cause analyses to Head of Product & AI for product impact assessment. Determines whether Prime model outputs have been affected and whether CS needs to notify clients.',ca:'Per incident',ty:'Feedback loop',ly:'Terra'}
+];
+
+var activeRole=null,activeLayers=[],activeTypes=[];
+
+function switchTab(tab,el){
+  document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active')});
+  document.querySelectorAll('.tab-panel').forEach(function(p){p.classList.remove('active')});
+  el.classList.add('active');
+  document.getElementById('panel-'+tab).classList.add('active');
+}
+
+function orgClick(g){
+  var role=g.dataset.role;
+  document.querySelectorAll('.tab')[1].click();
+  activeRole=role;
+  activeLayers=[];activeTypes=[];
+  document.querySelectorAll('.chip').forEach(function(c){c.classList.remove('active')});
+  document.querySelectorAll('.role-chip').forEach(function(c){
+    c.classList.toggle('inactive',c.dataset.role!==role);
+  });
+  document.getElementById('search').value='';
+  applyFilters();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function buildRoleBar(){
+  var bar=document.getElementById('role-bar');
+  Object.keys(RM).forEach(function(r){
+    var rr=RM[r];
+    var chip=document.createElement('span');
+    chip.className='role-chip';
+    chip.dataset.role=r;
+    chip.textContent=r;
+    chip.style.cssText='background:'+rr.bg+';color:'+rr.tx+';border-color:'+rr.tx+'55';
+    chip.onclick=function(){toggleRole(r,chip)};
+    bar.appendChild(chip);
+  });
+}
+
+function toggleRole(name,el){
+  var chips=document.querySelectorAll('.role-chip');
+  if(activeRole===name){activeRole=null;chips.forEach(function(c){c.classList.remove('inactive')});}
+  else{activeRole=name;chips.forEach(function(c){c.classList.toggle('inactive',c.dataset.role!==name)});}
+  applyFilters();
+}
+
+function toggleChip(el,kind){
+  var val=el.dataset[kind];
+  var arr=kind==='layer'?activeLayers:activeTypes;
+  var idx=arr.indexOf(val);
+  if(idx>-1){arr.splice(idx,1);el.classList.remove('active');}
+  else{arr.push(val);el.classList.add('active');}
+  applyFilters();
+}
+
+function applyFilters(){
+  var q=document.getElementById('search').value.toLowerCase().trim();
+  var filtered=DATA.filter(function(d){
+    var rm=!activeRole||d.f===activeRole||d.t===activeRole;
+    var lm=activeLayers.length===0||activeLayers.indexOf(d.ly)>-1;
+    var tm=activeTypes.length===0||activeTypes.indexOf(d.ty)>-1;
+    var qm=!q||(d.i+' '+d.d+' '+d.f+' '+d.t+' '+d.sec+' '+d.ca+' '+d.ty+' '+d.ly).toLowerCase().indexOf(q)>-1;
+    return rm&&lm&&tm&&qm;
+  });
+  renderContent(filtered);
+  document.getElementById('shown-count').textContent=filtered.length;
+  if(activeRole){
+    document.querySelectorAll('.role-node').forEach(function(n){n.classList.toggle('dimmed',n.dataset.role!==activeRole)});
+  } else {
+    document.querySelectorAll('.role-node').forEach(function(n){n.classList.remove('dimmed')});
+  }
+}
+
+function renderContent(items){
+  var content=document.getElementById('content');
+  if(!items.length){
+    content.innerHTML='<div class="empty"><p style="font-size:28px;margin-bottom:10px;color:var(--faint)">○</p><p>No protocols match your filters.<br><small>Try adjusting or clearing the filters above.</small></p></div>';
+    return;
+  }
+  var html='',lastSec='';
+  items.forEach(function(d){
+    if(d.sec!==lastSec){
+      var dot=SD[d.sec]||'#B8B4AB';
+      html+='<div class="sec-header"><span class="sec-dot" style="background:'+dot+'"></span>'+d.sec+'</div>';
+      lastSec=d.sec;
+    }
+    var fr=RM[d.f]||{bg:'#eee',tx:'#333'};
+    var tr=RM[d.t]||{bg:'#eee',tx:'#333'};
+    var ts=TY[d.ty]||{bg:'#eee',tx:'#333'};
+    var ls=LY[d.ly]||{bg:'#eee',tx:'#333'};
+    var crit=CRIT.indexOf(d.i)>-1;
+    html+='<div class="card'+(crit?' critical':'')+'">'+
+      '<div><span class="rpill" style="background:'+fr.bg+';color:'+fr.tx+'">'+d.f+'</span></div>'+
+      '<div><span class="rpill" style="background:'+tr.bg+';color:'+tr.tx+'">'+d.t+'</span></div>'+
+      '<div>'+
+        '<div class="card-title">'+(crit?'⚑ ':'')+d.i+'</div>'+
+        '<div class="card-detail collapsed">'+d.d+'</div>'+
+      '</div>'+
+      '<div class="card-meta">'+
+        (crit?'<span class="crit-flag">Critical</span>':'')+
+        '<span class="badge" style="background:'+ts.bg+';color:'+ts.tx+'">'+d.ty+'</span>'+
+        '<span class="badge" style="background:'+ls.bg+';color:'+ls.tx+'">'+d.ly+'</span>'+
+        '<span class="cadence">'+d.ca+'</span>'+
+      '</div>'+
+    '</div>';
+  });
+  content.innerHTML=html;
+  content.querySelectorAll('.card-detail').forEach(function(el){
+    if(el.scrollHeight>el.clientHeight+4){
+      var btn=document.createElement('button');
+      btn.className='read-more';btn.textContent='Show more';
+      btn.onclick=function(){
+        if(el.classList.contains('collapsed')){el.classList.remove('collapsed');btn.textContent='Show less';}
+        else{el.classList.add('collapsed');btn.textContent='Show more';}
+      };
+      el.parentNode.insertBefore(btn,el.nextSibling);
+    }
+  });
+}
+
+function resetAll(){
+  activeRole=null;activeLayers=[];activeTypes=[];
+  document.getElementById('search').value='';
+  document.querySelectorAll('.chip').forEach(function(c){c.classList.remove('active')});
+  document.querySelectorAll('.role-chip').forEach(function(c){c.classList.remove('inactive')});
+  document.querySelectorAll('.role-node').forEach(function(n){n.classList.remove('dimmed')});
+  applyFilters();
+}
+
+buildRoleBar();
+applyFilters();
+</script>
+</body>
+</html>
